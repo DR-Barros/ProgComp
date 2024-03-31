@@ -5,85 +5,51 @@ int main(){
     int N, T;
     cin >> N >> T;
 
-    map<char, vector<int>> m;
+    map<char, priority_queue<double>> m;
     for (int i = 0; i < N; i++) {
         char c;
-        int x;
+        double x;
         cin >> c >> x;
-        m[c].push_back(x);
+        m[c].push(-1*x);
     }
 
     double count = 0;
     int p, n;
     double vp, vn;
-    while (m['N'].size() > 0 || m['P'].size() > 0) {
+    double dp, dn = 0;
+    while (m['P'].empty() == false || m['N'].empty() == false) {
         //chequeamos cuantos elementos hay en cada vector
         p = m['P'].size();
         n = m['N'].size();
         if (p > 0 && n > 0) {
             //si hay elementos en ambos vectores, los eliminamos
-            vp = T*3/4/p;
-            vn = T/4/n;
+            vp = T*0.75/p;
+            vn = T*0.25/n;
             // el minimo cantidad de tiempo para que algun vector pierda un elemento aplicando vp a P y vn a N
-            double t = min(m['P'][0]/vp, m['N'][0]/vn);
-            for (int i = 1; i < m['P'].size(); i++) {
-                if (m['P'][i]/vp <= t) {
-                    t = m['P'][i]/vp;
-                }
+            double t;
+            if ((m['P'].top()*-1 - dp)/vp > (m['N'].top()*-1 - dn)/vn){
+                t = (m['N'].top()*-1 - dn)/vn;
+                m['N'].pop();
+            } else {
+                t = (m['P'].top()*-1 - dp)/vp;
+                m['P'].pop();
             }
-            for (int i = 1; i < m['N'].size(); i++) {
-                if (m['N'][i]/vn <= t) {
-                    t = m['N'][i]/vn;
-                }
-            }
-            for (int i = 0; i < m['P'].size(); i++) {
-                m['P'][i] -= vp*t;
-                if (m['P'][i] <= 0) {
-                    m['P'].erase(m['P'].begin() + i);
-                    i--;
-                }
-            }
-            for (int i = 0; i < m['N'].size(); i++) {
-                m['N'][i] -= vn*t;
-                if (m['N'][i] <= 0) {
-                    m['N'].erase(m['N'].begin() + i);
-                    i--;
-                }
-            }
+            dp += vp*t;
+            dn += vn*t;
             count += t;
         } else if (p > 0) {
             //si solo hay elementos en el vector P
             vp = T/p;
-            double t = m['P'][0]/vp;
-            for (int i = 1; i < m['P'].size(); i++) {
-                if (m['P'][i]/vp <= t) {
-                    t = m['P'][i]/vp;
-                }
-            }
-            for (int i = 0; i < m['P'].size(); i++) {
-                m['P'][i] -= vp*t;
-                if (m['P'][i] <= 0) {
-                    m['P'].erase(m['P'].begin() + i);
-                    i--;
-                }
-            }
+            double t = (m['P'].top()*-1 - dp)/vp;
+            m['P'].pop();
+            dp += vp*t;
             count += t;
         } else {
             //si solo hay elementos en el vector N
             vn = T/n;
-            double t = m['N'][0]/vn;
-            for (int i = 1; i < m['N'].size(); i++) {
-                if (m['N'][i]/vn <= t) {
-                    t = m['N'][i]/vn;
-                }
-            }
-            for (int i = 0; i < m['N'].size(); i++) {
-                m['N'][i] -= vn*t;
-                if (m['N'][i] <= 0) {
-                    m['N'].erase(m['N'].begin() + i);
-                    i--;
-                }
-            }
+            double t = (m['N'].top()*-1 - dn)/vn;
+            m['N'].pop();
+            dn += vn*t;
             count += t;
         }
     }
